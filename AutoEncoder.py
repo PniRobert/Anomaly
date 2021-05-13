@@ -15,22 +15,19 @@ from keras.utils import plot_model
 
 # define the autoencoder network model
 def autoencoder_model(inputshape):
-    # inputs = Input(shape=inputshape)
-    # L1 = LSTM(16, activation='relu', return_sequences=True,
-    #           kernel_regularizer=regularizers.l2(0.00))(inputs)
-    # L2 = LSTM(4, activation='relu', return_sequences=False)(L1)
-    # L3 = RepeatVector(inputshape[0])(L2)
-    # L4 = LSTM(4, activation='relu', return_sequences=True)(L3)
-    # L5 = LSTM(16, activation='relu', return_sequences=True)(L4)
-    # output = TimeDistributed(Dense(inputshape[1]))(L5)
-    # model = Model(inputs=inputs, outputs=output)
-    # return mod
-    model = Sequential()
-    model.add(LSTM(864, activation='relu', input_shape=inputshape))
+    inputs = Input(shape=inputshape)
+    L1 = LSTM(16, activation='relu', return_sequences=True,
+               kernel_regularizer=regularizers.l2(0.00))(inputs)
+    L2 = LSTM(4, activation='relu', return_sequences=False)(L1)
+    L3 = RepeatVector(inputshape[0])(L2)
+    L4 = LSTM(4, activation='relu', return_sequences=True)(L3)
+    L5 = LSTM(16, activation='relu', return_sequences=True)(L4)
+    output = TimeDistributed(Dense(inputshape[1]))(L5)
+    model = Model(inputs=inputs, outputs=output)
     return model
 
 total = 12 * 24 * 3
-epochs = 10
+epochs = 100
 batch_size = 36
 traindata_folder = "data/training"
 indexColName = "TimeGenerated [UTC]"
@@ -51,12 +48,10 @@ arr = dataset[["erro_rate", "avg_duration"]].to_numpy()
 scaler = MinMaxScaler()
 temp = scaler.fit_transform(arr)
 training = temp.reshape(total // batch_size, batch_size, 2)
-print(training)
 
-# nn = autoencoder_model((batch_size, 2))
-# nn.compile(loss="mae", optimizer="adam")
-# nn.summary()
+nn = autoencoder_model(training.shape[-2:])
+nn.compile(loss="mae", optimizer="adam")
 # plot_model(nn, show_shapes=True, to_file="mode_architecture.png")
-# nn.fit(training, training, batch_size=batch_size, epochs=3)
+nn.fit(training, training, batch_size=batch_size, epochs=epochs, validation_split=0.05)
 
 
