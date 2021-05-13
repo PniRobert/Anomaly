@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -23,5 +25,24 @@ def autoencoder_model(X):
     return model
 
 sns.set(color_codes=True)
+traindata_folder = "data/training"
+indexColName = "TimeGenerated [UTC]"
+firstFile = True
+custom_date_parser = lambda x: datetime.strptime(x, "%m/%d/%Y, %I:%M:%S.%f %p")
+for filename in os.listdir(traindata_folder):
+    if firstFile:
+        dataset = pd.read_csv(os.path.join(traindata_folder, filename), sep=",", quotechar='"', doublequote=True,
+                     parse_dates=[indexColName], date_parser=custom_date_parser)
+        dataset.set_index(indexColName)
+        firstFile = False
+    else:
+        ds = pd.read_csv(os.path.join(traindata_folder, filename), sep=",", quotechar='"', doublequote=True,
+                     parse_dates=[indexColName], date_parser=custom_date_parser)
+        dataset.append(ds)
+
+arr = dataset[["erro_rate", "avg_duration"]].to_numpy()
+scaler = MinMaxScaler()
+training = scaler.fit_transform(arr)
+# print(training)
 
 
