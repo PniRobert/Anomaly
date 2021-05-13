@@ -1,11 +1,17 @@
-let twindiow = 5m;
+let twindow = 5m;
+let startDateTime = datetime("2021-05-10T00:00:00.000");
+let endDateTime = datetime("2021-05-13T00:00:00.000");
 let avgTimeTaken = pni_iis_CL
+| where TimeGenerated >= startDateTime
+| where TimeGenerated < endDateTime
 | where Computer in ("prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
 "prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local")
 | where not(path_CF has "MediaProviders")
 | where not(path_CF has "MediaService")
-| summarize avg(time_taken_CF) by bin(TimeGenerated, twindiow);
+| summarize avg(time_taken_CF) by bin(TimeGenerated, twindow);
 let badones = pni_iis_CL
+| where TimeGenerated >= startDateTime
+| where TimeGenerated < endDateTime
 | where Computer in ("prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
 "prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local")
 | where not(path_CF has "MediaProviders")
@@ -13,14 +19,16 @@ let badones = pni_iis_CL
 | extend statusCode = toint(sc_status_CF)
 | where not(statusCode == 404)
 | where statusCode > 399
-| summarize count() by bin(TimeGenerated, twindiow)
+| summarize count() by bin(TimeGenerated, twindow)
 | project TimeGenerated, BadCount = count_;
 let total = pni_iis_CL
+| where TimeGenerated >= startDateTime
+| where TimeGenerated < endDateTime
 | where Computer in ("prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
 "prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local")
 | where not(path_CF has "MediaProviders")
 | where not(path_CF has "MediaService")
-| summarize count() by  bin(TimeGenerated, twindiow)
+| summarize count() by  bin(TimeGenerated, twindow)
 | project TimeGenerated, TotalCount = count_;
 total
 | join avgTimeTaken on TimeGenerated
