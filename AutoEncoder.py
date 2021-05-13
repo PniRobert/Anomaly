@@ -77,9 +77,11 @@ training = data_from_csv("data/training/051105132021.csv", batch_size)
 # nn = autoencoder_model(training.shape[-2:])
 nn = sequential_model(training.shape[-2:])
 nn.compile(loss="mae", optimizer="adam")
-# plot_model(nn, show_shapes=True, to_file="mode_architecture.png")
+plot_model(nn, show_shapes=True, to_file="mode_architecture.png")
 history = nn.fit(training, training, batch_size=batch_size, epochs=epochs, validation_split=0.05, shuffle=True)
-plot_train_history(history, "train")
+# plot_train_history(history, "train")
+
+nn.save("test_model")
 
 
 

@@ -1,6 +1,7 @@
 .vs/
 .idea/
 data/
+test_model/
 *.png
 *.csv
 
