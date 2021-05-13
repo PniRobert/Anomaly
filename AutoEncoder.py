@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 import pandas as pd
 import numpy as np
@@ -55,28 +54,25 @@ def sequential_model(inputshape):
         Dense(units=inputshape[1])))
     return model
 
+def data_from_csv(filename, block_size):
+    indexColName = "TimeGenerated [UTC]"
+    firstFile = True
+    custom_date_parser = lambda x: datetime.strptime(x, "%m/%d/%Y, %I:%M:%S.%f %p")
+    dataset = pd.read_csv(filename, sep=",", quotechar='"', doublequote=True,
+            parse_dates=[indexColName], date_parser=custom_date_parser)
+    dataset.set_index(indexColName)
+    arr = dataset[["erro_rate", "avg_duration"]].to_numpy()
+    originalShape = arr.shape
+    scaler = MinMaxScaler()
+    temp = scaler.fit_transform(arr)
+    return temp.reshape(originalShape[0] // block_size, block_size, originalShape[1])
+
+
 total = 12 * 24 * 3
 epochs = 1000
 batch_size = 36
-traindata_folder = "data/training"
-indexColName = "TimeGenerated [UTC]"
-firstFile = True
-custom_date_parser = lambda x: datetime.strptime(x, "%m/%d/%Y, %I:%M:%S.%f %p")
-for filename in os.listdir(traindata_folder):
-    if firstFile:
-        dataset = pd.read_csv(os.path.join(traindata_folder, filename), sep=",", quotechar='"', doublequote=True,
-                     parse_dates=[indexColName], date_parser=custom_date_parser)
-        dataset.set_index(indexColName)
-        firstFile = False
-    else:
-        ds = pd.read_csv(os.path.join(traindata_folder, filename), sep=",", quotechar='"', doublequote=True,
-                     parse_dates=[indexColName], date_parser=custom_date_parser)
-        dataset.append(ds)
 
-arr = dataset[["erro_rate", "avg_duration"]].to_numpy()
-scaler = MinMaxScaler()
-temp = scaler.fit_transform(arr)
-training = temp.reshape(total // batch_size, batch_size, 2)
+training = data_from_csv("data/training/051105132021.csv", batch_size)
 
 # nn = autoencoder_model(training.shape[-2:])
 nn = sequential_model(training.shape[-2:])
