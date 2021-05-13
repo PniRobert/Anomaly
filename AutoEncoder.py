@@ -13,6 +13,21 @@ from keras.models import Sequential
 from keras import regularizers
 from keras.utils import plot_model
 
+# utility for train history
+def plot_train_history(history, title):
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+
+    epochs = range(len(loss))
+
+    plt.figure()
+
+    plt.plot(epochs, loss, 'b', label='Training loss')
+    plt.plot(epochs, val_loss, 'r', label='Validation loss')
+    plt.title(title)
+    plt.legend()
+    plt.show()
+
 # define the autoencoder network model
 def autoencoder_model(inputshape):
     inputs = Input(shape=inputshape)
@@ -52,6 +67,8 @@ training = temp.reshape(total // batch_size, batch_size, 2)
 nn = autoencoder_model(training.shape[-2:])
 nn.compile(loss="mae", optimizer="adam")
 # plot_model(nn, show_shapes=True, to_file="mode_architecture.png")
-nn.fit(training, training, batch_size=batch_size, epochs=epochs, validation_split=0.05)
+history = nn.fit(training, training, batch_size=batch_size, epochs=epochs, validation_split=0.05, shuffle=False)
+plot_train_history(history, "train")
+
 
 
