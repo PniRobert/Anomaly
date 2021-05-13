@@ -2,7 +2,6 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-import seaborn as sns
 import matplotlib.pyplot as plt
 from numpy.random import seed
 import tensorflow as tf
@@ -68,7 +67,6 @@ def data_from_csv(filename, block_size):
     return temp.reshape(originalShape[0] // block_size, block_size, originalShape[1])
 
 
-total = 12 * 24 * 3
 epochs = 1000
 batch_size = 36
 
