@@ -33,16 +33,30 @@ def autoencoder_model(inputshape):
     inputs = Input(shape=inputshape)
     L1 = LSTM(16, activation='relu', return_sequences=True,
                kernel_regularizer=regularizers.l2(0.00))(inputs)
-    L2 = LSTM(4, activation='relu', return_sequences=False)(L1)
+    L2 = LSTM(2, activation='relu', return_sequences=False)(L1)
     L3 = RepeatVector(inputshape[0])(L2)
-    L4 = LSTM(4, activation='relu', return_sequences=True)(L3)
+    L4 = LSTM(2, activation='relu', return_sequences=True)(L3)
     L5 = LSTM(16, activation='relu', return_sequences=True)(L4)
     output = TimeDistributed(Dense(inputshape[1]))(L5)
     model = Model(inputs=inputs, outputs=output)
     return model
 
+def sequential_model(inputshape):
+    model = Sequential()
+    model.add(LSTM(
+        units=72,
+        input_shape=inputshape
+    ))
+    model.add(Dropout(rate=0.2))
+    model.add(RepeatVector(n=inputshape[0]))
+    model.add(LSTM(units=72, return_sequences=True))
+    model.add(Dropout(rate=0.2))
+    model.add(TimeDistributed(
+        Dense(units=inputshape[1])))
+    return model
+
 total = 12 * 24 * 3
-epochs = 100
+epochs = 1000
 batch_size = 36
 traindata_folder = "data/training"
 indexColName = "TimeGenerated [UTC]"
@@ -64,10 +78,11 @@ scaler = MinMaxScaler()
 temp = scaler.fit_transform(arr)
 training = temp.reshape(total // batch_size, batch_size, 2)
 
-nn = autoencoder_model(training.shape[-2:])
+# nn = autoencoder_model(training.shape[-2:])
+nn = sequential_model(training.shape[-2:])
 nn.compile(loss="mae", optimizer="adam")
 # plot_model(nn, show_shapes=True, to_file="mode_architecture.png")
-history = nn.fit(training, training, batch_size=batch_size, epochs=epochs, validation_split=0.05, shuffle=False)
+history = nn.fit(training, training, batch_size=batch_size, epochs=epochs, validation_split=0.05, shuffle=True)
 plot_train_history(history, "train")
 
 
