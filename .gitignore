@@ -1,3 +1,6 @@
 .vs/
 .idea/
 data/
+*.png
+*.csv
+
