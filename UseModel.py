@@ -17,6 +17,14 @@ error_rate_column = "erro_rate"
 avg_column = "avg_duration"
 data_column = [error_rate_column, avg_column]
 
+def plot_loss(ds_result, column_to_display):
+    plt.figure(figsize=(16,9), dpi=80)
+    plt.title('Loss Distribution', fontsize=16)
+    # sns.distplot(scored[column_to_display], bins = 20, kde = True, color = "blue")
+    sns.histplot(scored[column_to_display], bins = 20, kde = True, color = "blue")
+    plt.xlim([0.0,.5])
+    plt.show()
+
 def data_from_csv(filename, block_size):
     firstFile = True
     custom_date_parser = lambda x: datetime.strptime(x, "%m/%d/%Y, %I:%M:%S.%f %p")
@@ -47,12 +55,7 @@ ds_pred.index = ds.index
 scored = pd.DataFrame(index=ds.index)
 test = test.reshape(test.shape[0] * test.shape[1], test.shape[2])
 scored[loss_column_name] = np.mean(np.abs(pred - test), axis=1)
-plt.figure(figsize=(16,9), dpi=80)
-plt.title('Loss Distribution', fontsize=16)
-# sns.distplot(scored[loss_column_name], bins = 20, kde = True, color = "blue")
-sns.histplot(scored[loss_column_name], bins = 20, kde = True, color = "blue")
-plt.xlim([0.0,.5])
-plt.show()
+# plot_loss(scored, loss_column_name)
 scored[threshold_column_name] = THRESHOLD
 scored[anomaly_column_name] = scored[loss_column_name] > scored[threshold_column_name]
 scored[error_rate_column] = ds[error_rate_column]
