@@ -55,7 +55,7 @@ ds_pred.index = ds.index
 scored = pd.DataFrame(index=ds.index)
 test = test.reshape(test.shape[0] * test.shape[1], test.shape[2])
 scored[loss_column_name] = np.mean(np.abs(pred - test), axis=1)
-# plot_loss(scored, loss_column_name)
+plot_loss(scored, loss_column_name)
 scored[threshold_column_name] = THRESHOLD
 scored[anomaly_column_name] = scored[loss_column_name] > scored[threshold_column_name]
 scored[error_rate_column] = ds[error_rate_column]
@@ -65,7 +65,7 @@ scored.set_index(indexColName)
 
 anomaly = scored[scored[anomaly_column_name] == True]
 with pd.option_context("display.max_rows", None, 'display.max_columns', None):
-    print(anomaly[[indexColName, avg_column, error_rate_column]])
+    print(anomaly[[indexColName]])
 
 
 

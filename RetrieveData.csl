@@ -1,19 +1,19 @@
 let twindow = 5m;
 let startDateTime = datetime("2021-05-10T00:00:00.000");
 let endDateTime = datetime("2021-05-13T00:00:00.000");
+let machines = dynamic(["prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
+"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local"]);
 let avgTimeTaken = pni_iis_CL
 | where TimeGenerated >= startDateTime
 | where TimeGenerated < endDateTime
-| where Computer in ("prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
-"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local")
+| where Computer in (machines)
 | where not(path_CF has "MediaProviders")
 | where not(path_CF has "MediaService")
 | summarize avg(time_taken_CF) by bin(TimeGenerated, twindow);
 let badones = pni_iis_CL
 | where TimeGenerated >= startDateTime
 | where TimeGenerated < endDateTime
-| where Computer in ("prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
-"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local")
+| where Computer in (machines)
 | where not(path_CF has "MediaProviders")
 | where not(path_CF has "MediaService")
 | extend statusCode = toint(sc_status_CF)
@@ -24,8 +24,7 @@ let badones = pni_iis_CL
 let total = pni_iis_CL
 | where TimeGenerated >= startDateTime
 | where TimeGenerated < endDateTime
-| where Computer in ("prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
-"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local")
+| where Computer in (machines)
 | where not(path_CF has "MediaProviders")
 | where not(path_CF has "MediaService")
 | summarize count() by  bin(TimeGenerated, twindow)

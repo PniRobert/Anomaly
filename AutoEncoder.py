@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
+import seaborn as sns
 from numpy.random import seed
 import tensorflow as tf
 from keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
@@ -24,6 +25,15 @@ def plot_train_history(history, title):
     plt.plot(epochs, val_loss, 'r', label='Validation loss')
     plt.title(title)
     plt.legend()
+    plt.show()
+
+# utility for plot loss distribution
+def plot_loss(ds_result, column_to_display):
+    plt.figure(figsize=(16,9), dpi=80)
+    plt.title('Loss Distribution', fontsize=16)
+    # sns.distplot(scored[column_to_display], bins = 20, kde = True, color = "blue")
+    sns.histplot(ds_result[column_to_display], bins = 20, kde = True, color = "blue")
+    plt.xlim([0.0,.5])
     plt.show()
 
 # define the autoencoder network model
@@ -69,6 +79,7 @@ def data_from_csv(filename, block_size):
 
 epochs = 1000
 batch_size = 36
+sns.set(color_codes=True, rc={'figure.figsize':(11, 4)})
 
 training = data_from_csv("data/training/051105132021.csv", batch_size)
 
@@ -77,7 +88,7 @@ nn = sequential_model(training.shape[-2:])
 nn.compile(loss="mae", optimizer="adam")
 plot_model(nn, show_shapes=True, to_file="mode_architecture.png")
 history = nn.fit(training, training, batch_size=batch_size, epochs=epochs, validation_split=0.05, shuffle=True)
-# plot_train_history(history, "train")
+plot_train_history(history, "train")
 
 nn.save("test_model")
 
