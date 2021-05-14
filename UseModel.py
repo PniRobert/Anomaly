@@ -45,7 +45,7 @@ threshold_column_name = "threshold"
 anomaly_column_name = "anomaly"
 THRESHOLD=0.225
 
-(test, ds) = data_from_csv("data/training/050705092021.csv", batch_size)
+(test, ds) = data_from_csv("data/test/query_data.csv", batch_size)
 
 nn = load_model("test_model")
 # nn.summary()
