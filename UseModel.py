@@ -12,10 +12,12 @@ from keras import regularizers
 from keras.models import load_model
 import seaborn as sns
 
-data_column = ["erro_rate", "avg_duration"]
+indexColName = "TimeGenerated [UTC]"
+error_rate_column = "erro_rate"
+avg_column = "avg_duration"
+data_column = [error_rate_column, avg_column]
 
 def data_from_csv(filename, block_size):
-    indexColName = "TimeGenerated [UTC]"
     firstFile = True
     custom_date_parser = lambda x: datetime.strptime(x, "%m/%d/%Y, %I:%M:%S.%f %p")
     dataset = pd.read_csv(filename, sep=",", quotechar='"', doublequote=True,
@@ -27,10 +29,12 @@ def data_from_csv(filename, block_size):
     temp = scaler.fit_transform(arr)
     return (temp.reshape(originalShape[0] // block_size, block_size, originalShape[1]), dataset)
 
-sns.set(color_codes=True)
+sns.set(color_codes=True, rc={'figure.figsize':(11, 4)})
 batch_size = 36
 loss_column_name = "loss_mae"
-THRESHOLD =0.175
+threshold_column_name = "threshold"
+anomaly_column_name = "anomaly"
+THRESHOLD =0.2
 
 (test, ds) = data_from_csv("data/training/050105032021.csv", batch_size)
 
@@ -45,9 +49,23 @@ test = test.reshape(test.shape[0] * test.shape[1], test.shape[2])
 scored[loss_column_name] = np.mean(np.abs(pred - test), axis=1)
 plt.figure(figsize=(16,9), dpi=80)
 plt.title('Loss Distribution', fontsize=16)
-sns.distplot(scored[loss_column_name], bins = 20, kde= True, color = 'blue')
+# sns.distplot(scored[loss_column_name], bins = 20, kde = True, color = "blue")
+sns.histplot(scored[loss_column_name], bins = 20, kde = True, color = "blue")
 plt.xlim([0.0,.5])
 plt.show()
+scored[threshold_column_name] = THRESHOLD
+scored[anomaly_column_name] = scored[loss_column_name] > scored[threshold_column_name]
+scored[error_rate_column] = ds[error_rate_column]
+scored[avg_column] = ds[avg_column]
+scored[indexColName] = ds[indexColName]
+scored.set_index(indexColName)
+
+anomaly = scored[scored[anomaly_column_name] == True]
+with pd.option_context("display.max_rows", None, 'display.max_columns', None):
+    print(anomaly[[indexColName, avg_column, error_rate_column]])
+
+
+
 
 
 
