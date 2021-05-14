@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import pandas as pd
 import numpy as np
@@ -11,6 +12,8 @@ from keras.models import Model
 from keras.models import Sequential
 from keras import regularizers
 from keras.utils import plot_model
+
+indexColName = "TimeGenerated [UTC]"
 
 # utility for train history
 def plot_train_history(history, title):
@@ -63,33 +66,37 @@ def sequential_model(inputshape):
         Dense(units=inputshape[1])))
     return model
 
-def data_from_csv(filename, block_size):
-    indexColName = "TimeGenerated [UTC]"
-    firstFile = True
+def data_from_csv(data_folder, block_size):
+    parts = []
     custom_date_parser = lambda x: datetime.strptime(x, "%m/%d/%Y, %I:%M:%S.%f %p")
-    dataset = pd.read_csv(filename, sep=",", quotechar='"', doublequote=True,
-            parse_dates=[indexColName], date_parser=custom_date_parser)
-    dataset.set_index(indexColName)
+    for filename in os.listdir(data_folder):
+        ds = pd.read_csv(os.path.join(data_folder, filename), sep=",", quotechar='"', doublequote=True,
+                        parse_dates=[indexColName], date_parser=custom_date_parser)
+        ds.set_index(indexColName)
+        parts.append(ds)
+
+    dataset = pd.concat(parts)
     arr = dataset[["erro_rate", "avg_duration"]].to_numpy()
     originalShape = arr.shape
     scaler = MinMaxScaler()
     temp = scaler.fit_transform(arr)
-    return temp.reshape(originalShape[0] // block_size, block_size, originalShape[1])
+    train_data = temp.reshape(originalShape[0] // block_size, block_size, originalShape[1])
+    return (train_data, dataset)
 
 
-epochs = 1000
+epochs = 1250
 batch_size = 36
 sns.set(color_codes=True, rc={'figure.figsize':(11, 4)})
 
-training = data_from_csv("data/training/051005122021.csv", batch_size)
+(training, ds_train) = data_from_csv("data/training", batch_size)
 
 nn = sequential_model(training.shape[-2:])
 nn.compile(loss="mae", optimizer="adam")
-plot_model(nn, show_shapes=True, to_file="mode_architecture.png")
-history = nn.fit(training, training, batch_size=batch_size, epochs=epochs, validation_split=0.05, shuffle=True)
+# plot_model(nn, show_shapes=True, to_file="mode_architecture.png")
+history = nn.fit(training, training, batch_size=batch_size, epochs=epochs, validation_split=0.05, shuffle=True, verbose=False)
 plot_train_history(history, "train")
 
-nn.save("test_model")
+# nn.save("test_model")
 
 
 
