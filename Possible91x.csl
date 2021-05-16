@@ -41,6 +41,7 @@ let endDateTime = datetime("2021-05-14T18:29:59.999");
 dependencies
 | where timestamp >= startDateTime
 | where  timestamp <= endDateTime
-| where not(['type'] has "Ajax")
+| where (['type'] has "Ajax" and name has "/services/printing") or ['type'] has "Http" or ['type'] has "SQL"
 | where duration > 1000
-| order by duration desc
+| sort by duration desc
+| project timestamp, ['type'], name, duration, resultCode
