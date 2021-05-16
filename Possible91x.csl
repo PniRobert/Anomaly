@@ -35,3 +35,12 @@ pni_iis_CL
 | where time_taken_CF > 1000000
 | where not(statusCode == 404) and statusCode > 399
 | sort by TimeGenerated desc
+
+let startDateTime = datetime("2021-05-14T16:30:00.000");
+let endDateTime = datetime("2021-05-14T18:29:59.999");
+dependencies
+| where timestamp >= startDateTime
+| where  timestamp <= endDateTime
+| where not(['type'] has "Ajax")
+| where duration > 1000
+| order by duration desc
