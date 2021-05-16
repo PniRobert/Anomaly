@@ -64,7 +64,7 @@ scored.set_index(indexColName)
 
 anomaly = scored[scored[anomaly_column_name] == True]
 with pd.option_context("display.max_rows", None, 'display.max_columns', None):
-    print(anomaly[[indexColName, loss_column_name]])
+    print(anomaly[[indexColName, loss_column_name, avg_column, error_rate_column]])
 
 
 
