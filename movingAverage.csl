@@ -1,0 +1,16 @@
+let series_moving_avg_fl = (y_series:dynamic, n:int, center:bool=false)
+{
+    series_fir(y_series, repeat(1, n), true, center)
+};
+let twindow = 5m;
+let startDateTime = datetime("2021-02-14T00:00:00.000");
+let endDateTime = datetime("2021-02-15T00:00:00.000");
+let machines = dynamic(["prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
+"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local"]);
+pni_iis_CL
+| where Computer in (machines)
+| where not(path_CF has "MediaProviders")
+| where not(path_CF has "MediaService")
+| make-series avg(time_taken_CF) on TimeGenerated from startDateTime to endDateTime step twindow
+| extend move_avg = series_moving_avg_fl(avg_time_taken_CF, 8, True)
+| render timechart
