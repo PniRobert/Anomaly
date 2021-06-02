@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -42,20 +43,18 @@ batch_size = 36
 loss_column_name = "loss_mae"
 threshold_column_name = "threshold"
 anomaly_column_name = "anomaly"
-THRESHOLD =0.2
+THRESHOLD=0.225
 
-(test, ds) = data_from_csv("data/training/050105032021.csv", batch_size)
+(test, ds) = data_from_csv("data/test/query_data.csv", batch_size)
 
 nn = load_model("test_model")
 # nn.summary()
 temp = nn.predict(test)
 pred = temp.reshape(temp.shape[0] * temp.shape[1],  temp.shape[2])
-ds_pred = pd.DataFrame(pred, columns=data_column)
-ds_pred.index = ds.index
 scored = pd.DataFrame(index=ds.index)
 test = test.reshape(test.shape[0] * test.shape[1], test.shape[2])
 scored[loss_column_name] = np.mean(np.abs(pred - test), axis=1)
-plot_loss(scored, loss_column_name)
+# plot_loss(scored, loss_column_name)
 scored[threshold_column_name] = THRESHOLD
 scored[anomaly_column_name] = scored[loss_column_name] > scored[threshold_column_name]
 scored[error_rate_column] = ds[error_rate_column]
@@ -65,7 +64,7 @@ scored.set_index(indexColName)
 
 anomaly = scored[scored[anomaly_column_name] == True]
 with pd.option_context("display.max_rows", None, 'display.max_columns', None):
-    print(anomaly[[indexColName]])
+    print(anomaly[[indexColName, loss_column_name, avg_column, error_rate_column]])
 
 
 

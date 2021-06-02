@@ -1,0 +1,11 @@
+let startDateTime = datetime("2021-05-13T08:00:00.000");
+let endDateTime = datetime("2021-05-13T09:00:00.000");
+let machines = dynamic(["prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
+"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local"]);
+pni_iis_CL
+| where TimeGenerated >= startDateTime
+| where TimeGenerated <= endDateTime
+| where Computer in (machines)
+| where not(path_CF has "MediaProviders")
+| where not(path_CF has "MediaService")
+| sort by time_taken_CF desc

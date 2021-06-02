@@ -1,0 +1,34 @@
+let twindow = 5m;
+let machines = dynamic(["prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
+"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local"]);
+let avgTimeTaken = pni_iis_CL
+| where Computer in (machines)
+| where not(path_CF has "MediaProviders")
+| where not(path_CF has "MediaService")
+| where not(path_CF has "OrderConfirmation" or path_CF  has "ConsolidatedCheckOut_Confirmed")
+| summarize avg(time_taken_CF) by bin(TimeGenerated, twindow);
+let badones = pni_iis_CL
+| where Computer in (machines)
+| where not(path_CF has "MediaProviders")
+| where not(path_CF has "MediaService")
+| where not(path_CF has "OrderConfirmation" or path_CF  has "ConsolidatedCheckOut_Confirmed")
+| extend statusCode = toint(sc_status_CF)
+| where not(statusCode == 404)
+| where statusCode > 399
+| summarize count() by bin(TimeGenerated, twindow)
+| project TimeGenerated, BadCount = count_;
+let total = pni_iis_CL
+| where Computer in (machines)
+| where not(path_CF has "MediaProviders")
+| where not(path_CF has "MediaService")
+| where not(path_CF has "OrderConfirmation" or path_CF  has "ConsolidatedCheckOut_Confirmed")
+| summarize count() by  bin(TimeGenerated, twindow)
+| project TimeGenerated, TotalCount = count_;
+total
+| join avgTimeTaken on TimeGenerated
+| join kind=leftouter badones  on  TimeGenerated
+| extend erro_rate = 1000000*iff(isnull(BadCount), 0.0, BadCount*1.0)/(TotalCount * 1.0)
+| extend avg_duration = avg_time_taken_CF
+| project TimeGenerated, erro_rate, avg_duration
+| sort by TimeGenerated desc
+| limit 288 // 576

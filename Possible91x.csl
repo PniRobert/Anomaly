@@ -1,0 +1,47 @@
+let startDateTime = datetime("2021-05-13T09:45:00.000");
+let endDateTime = datetime("2021-05-13T11:00:00.000");
+let machines = dynamic(["prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
+"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local"]);
+pni_iis_CL
+| where TimeGenerated >= startDateTime
+| where TimeGenerated <= endDateTime
+| where Computer in (machines)
+| where not(path_CF has "MediaProviders")
+| where not(path_CF has "MediaService")
+// | where xForwardedFor_CF has "174.49.244.70"
+| sort by TimeGenerated desc
+| project TimeGenerated, Computer, path_CF, time_taken_CF, username_CF
+
+let machines = dynamic(["prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
+"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local"]);
+Event
+| where Computer in (machines)
+| where Source has "ASP.NET 4.0.30319.0"
+| where EventLog has "Application"
+| where EventLevel >= 2
+| limit 100
+
+let startDateTime = datetime("2021-05-15T22:30:00.000");
+let endDateTime = datetime("2021-05-15T22:40:00.000");
+let machines = dynamic(["prdmzsplus011.pniprod.local", "prdmzsplus045.pniprod.local", "prdmzsplus046.pniprod.local",
+"prdmzsplus047.pniprod.local", "prdmzsplus059.pniprod.local", "prdmzsplus060.pniprod.local"]);
+pni_iis_CL
+| where TimeGenerated >= startDateTime
+| where TimeGenerated <= endDateTime
+| where Computer in (machines)
+| where not(path_CF has "MediaProviders")
+| where not(path_CF has "MediaService")
+| extend statusCode = toint(sc_status_CF)
+| where time_taken_CF > 1000000
+| where not(statusCode == 404) and statusCode > 399
+| sort by TimeGenerated desc
+
+let startDateTime = datetime("2021-05-14T16:30:00.000");
+let endDateTime = datetime("2021-05-14T18:29:59.999");
+dependencies
+| where timestamp >= startDateTime
+| where  timestamp <= endDateTime
+| where (['type'] has "Ajax" and name has "/services/printing") or ['type'] has "Http" or ['type'] has "SQL"
+| where duration > 1000
+| sort by duration desc
+| project timestamp, ['type'], name, duration, resultCode
