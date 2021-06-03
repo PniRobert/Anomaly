@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timedelta
 import math
 import pandas as pd
 import numpy as np
@@ -65,6 +66,39 @@ scored.set_index(indexColName)
 anomaly = scored[scored[anomaly_column_name] == True]
 with pd.option_context("display.max_rows", None, 'display.max_columns', None):
     print(anomaly[[indexColName, loss_column_name, avg_column, error_rate_column]])
+
+print("       ")
+print("       ")
+timeFormat = "%Y-%m-%dT%H:%M:%S.000"
+find = False
+filters = []
+ten_minute_delta = timedelta(minutes=30)
+timeranges = anomaly[indexColName].squeeze().sort_values(ascending=True)
+startTime = timeranges.iloc[0]
+previousTime = startTime
+for idx in range(1, timeranges.size -1):
+    endTime = timeranges.iloc[idx]
+    # print(f"Current: {startTime}     {endTime}")
+    # print(f"Compare nearest: {previousTime}  {endTime}")
+    if endTime - previousTime > ten_minute_delta:
+        if find:
+            filters.append((startTime, previousTime))
+            find = False
+    else:
+        if not find:
+            find = True
+            startTime = previousTime
+    previousTime = endTime
+if find:
+    filters.append((startTime, endTime))
+# print(filters)
+for p in filters:
+    print(f"let startDateTime = datetime('{p[0].strftime(timeFormat)}');")
+    print(f"let endDateTime = datetime('{p[1].strftime(timeFormat)}');")
+    print("       ")
+    print("       ")
+
+
 
 
 
