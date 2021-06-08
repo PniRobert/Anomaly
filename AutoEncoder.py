@@ -116,7 +116,7 @@ sigma = loss_column .std()
 threshold = mean + 1.96*sigma/math.sqrt(len(loss_column)) # 95%
 print(f"Threshold: {threshold}")
 
-nn.save("test_model")
+nn.save("improved_model")
 
 
 

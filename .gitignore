@@ -2,6 +2,7 @@
 .idea/
 data/
 test_model/
+improved_model/
 __pycache__/
 *.png
 *.csv
