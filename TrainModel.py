@@ -36,7 +36,7 @@ pred = nn.predict(test)
 ds1 = build_loss(pred, test, loss_column_name, ds_train.index)
 plot_loss(ds1, loss_column_name)
 
-nn.save("improved_model")
+nn.save("test_model")
 
 
 
